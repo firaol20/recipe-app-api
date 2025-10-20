@@ -2,6 +2,8 @@ import express from 'express';
 import { ENV } from "./config/env.js";
 import {db} from "./config/db.js";
 import { favoritesTable } from './db/schema.js';
+import { eq, and } from "drizzle-orm";
+
 
 
 const app = express();
@@ -46,7 +48,7 @@ app.get("/api/favorites/:userId", async(req,res) =>{
     try {
         const {userId} = req.params;
 
-        const userFavorites = await db.select().from(favoritesTable).where(favoritesTable.userId.eq(userId));
+        const userFavorites = await db.select().from(favoritesTable).where(eq(favoritesTable.userId, userId));
         res.status(200).json(userFavorites);
     } catch (error) {
         console.log("Error fetching favorites:", error);
@@ -59,10 +61,12 @@ app.delete("/api/favorites/:userId/:recipeId", async (req, res) => {
     try {
     const { userId, recipeId } = req.params;
 
-        await db.delete(favoritesTable)
-        .where(
-            and(eq(favoritesTable.userId, userId), eq(favoritesTable.recipeId, parseInt(recipeId)))
-        );
+    await db.delete(favoritesTable)
+    .where(and(
+    eq(favoritesTable.userId, userId),
+    eq(favoritesTable.recipeId, recipeId)
+));
+
 
         res.status(200).json({ message: "Favorite removed successfully" });
     } catch (error) {
